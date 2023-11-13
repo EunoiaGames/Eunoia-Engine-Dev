@@ -1,0 +1,27 @@
+struct BaseLight
+{
+	vec4 color;
+};
+
+struct DirectionalLight
+{
+	BaseLight baseLight;
+	vec3 direction;
+	float p0;
+};
+
+struct Attenuation
+{
+	float quadratic;
+	float linear;
+	float constant;
+};
+
+struct PointLight
+{
+	BaseLight baseLight;
+	vec3 position;
+	float p0;
+	Attenuation attenuation;
+	float p1;
+};

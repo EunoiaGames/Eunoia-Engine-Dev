@@ -1,0 +1,27 @@
+layout (input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput AlbedoSampler;
+layout (input_attachment_index = 1, set = 0, binding = 1) uniform subpassInput PositionSampler;
+layout (input_attachment_index = 2, set = 0, binding = 2) uniform subpassInput NormalSampler;
+
+layout(location = 0) out vec4 FragColor;
+
+layout(set = 1, binding = 0) uniform PerFrame
+{
+	vec3 CamPos;
+};
+
+void main()
+{
+	FragColor = vec4(0,0,0,0);
+	float gamma = 2.2;
+
+	vec4 pos = subpassLoad(PositionSampler);
+	vec4 normal = subpassLoad(NormalSampler);
+	vec4 albedo = subpassLoad(AlbedoSampler);
+
+	float specular = pos.a;
+	float gloss = normal.a;
+
+	FragColor = CalcDeferredPass(pos.xyz, CamPos, normal.xyz, albedo.rgb, specular, gloss);
+	FragColor.rgb = FragColor.rgb / (FragColor.rgb + vec3(1.0, 1.0, 1.0));
+	FragColor.rgb = pow(FragColor.rgb, vec3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+}

@@ -1,0 +1,35 @@
+#include "../LightCalcCommon.glh"
+
+vec4 CalcBaseLightBlinn(BaseLight light, vec3 direction, vec3 normal, vec3 camPos, vec3 worldPos, vec3 albedo, float specular, float gloss)
+{
+	vec3 viewDir = normalize(camPos - worldPos);
+	vec3 halfWayDir = normalize(direction + viewDir);
+	float energyConservation = (8.0 + gloss) / (8.0 * PI);
+	float spec = energyConservation * pow(max(dot(normal, halfWayDir), 0.0), gloss);
+	vec3 specularComponent = light.color.rgb * spec * specular * light.color.a;
+
+	float diff = max(dot(normal, direction), 0.0);
+	vec3 diffuseComponent = light.color.rgb * diff * light.color.a;
+
+	vec4 lightColor = vec4((specularComponent + diffuseComponent) * albedo, 1.0);
+	return lightColor;
+}
+
+vec4 CalcDirectionalLightBlinn(DirectionalLight light, vec3 normal, vec3 camPos, vec3 worldPos, vec3 albedo, float specular, float gloss)
+{
+	return CalcBaseLightBlinn(light.baseLight, -light.direction, normal, camPos, worldPos, albedo, specular, gloss);
+}
+
+vec4 CalcPointLightBlinn(PointLight light, vec3 normal, vec3 camPos, vec3 worldPos, vec3 albedo, float specular, float gloss)
+{
+	vec3 direction = worldPos - light.position;
+	float distance = length(direction);
+	direction = normalize(direction);
+
+	vec4 color = CalcBaseLightBlinn(light.baseLight, direction, normal, camPos, worldPos, albedo, specular, gloss);
+	float atten = 1.0 / (light.attenuation.constant +
+						 light.attenuation.linear * distance +
+						 light.attenuation.quadratic * distance * distance);
+
+	return color * atten;
+}

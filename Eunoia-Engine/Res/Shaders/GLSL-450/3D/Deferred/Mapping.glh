@@ -1,0 +1,16 @@
+float CalcShadow(sampler2D shadowMap, vec4 fragPosLightSpace)
+{
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	//if(projCoords.z > 1.0)
+		//return 0.0;
+	vec2 shadowMapCoords = projCoords.xy * 0.5 + 0.5;
+	float closestDepth = texture(shadowMap, shadowMapCoords).r;
+	float currentDepth = projCoords.z;
+	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+	return shadow;
+}
+
+vec2 CalcParallaxTexCoords(vec2 texCoords, vec3 tangentViewDir, sampler2D displacementMap, float displacementScale, float displacementBias)
+{
+	return texCoords + tangentViewDir.xy * (texture(displacementMap, texCoords).r * displacementScale + displacementBias);
+}
